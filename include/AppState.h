@@ -1,0 +1,31 @@
+#pragma once
+
+#define ROTARY_CLK 18
+#define ROTARY_DT 19
+#define ENCODER_SW 5
+#define BACK_BUTTON 13
+#define FIRE_BUTTON 4
+#define THIRD_BUTTON 14
+#define SDA_PIN 21
+#define SCL_PIN 22
+
+enum MenuState {
+  MAIN_MENU,
+
+  NETWORK_MENU,
+  CUES_MENU,
+  RUN_SHOW_MENU,
+  SETTINGS_MENU,
+
+  ENTER_PORT,
+  ENTER_PASSCODE,
+  ENTER_QLAB_IP,
+  SHOW_INFO,
+
+  ADD_CUE_MENU,
+  EDIT_CUE_MENU,
+  DELETE_CUE_MENU,
+  CUE_CONTROL_MENU,
+  REORDER_CUE_MENU
+};
+
