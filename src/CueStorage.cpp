@@ -1,6 +1,7 @@
 #include <Preferences.h>
 #include "CueStorage.h"
 
+namespace osc_controller {
 #define CUE_NAMESPACE "cues"
 #define MAX_CUES 32
 
@@ -108,3 +109,4 @@ void resetCues() {
   cuePrefs.end();
 }
 
+} // namespace osc_controller

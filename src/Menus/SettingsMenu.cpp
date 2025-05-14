@@ -4,13 +4,18 @@
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 
-#include "SettingsMenu.h"
-#include "MainMenu.h"
+#include "Globals.h"
+#include "Menus/SettingsMenu.h"
+#include "Menus/MainMenu.h"
+#include "Settings/NetworkSettings.h"
+#include "Settings/WifiConnector.h"
+#include "Settings/LanguageManager.h"
+#include "Utilities/RotaryTextInput.h"
 #include "CueStorage.h"
-#include "NetworkSettings.h"
-#include "RotaryTextInput.h"
-#include "WifiConnector.h"
-#include "LanguageManager.h"
+
+namespace osc_controller::menus {
+
+using namespace osc_controller;
 
 enum ThirdButtonAction {
   ACTION_NONE,
@@ -61,11 +66,11 @@ bool isScrollLockEnabled() {
 
 void performFactoryReset() {
   lcd.clear();
-  lcd.print(t("reset_notify"));
+  lcd.print(settings::t("reset_notify"));
   delay(1000);
 
   resetCues();
-  resetNetworkSettings(); 
+  settings::resetNetworkSettings(); 
   settingsPrefs.begin("settings", false);
   settingsPrefs.clear();
   settingsPrefs.end();
@@ -75,25 +80,25 @@ void performFactoryReset() {
   thirdButtonAction = ACTION_NONE;
   customOscPath = "";
   gotoCueID = "";
-  port = "53000";
+  settings::port = "53000";
 
   lcd.clear();
-  lcd.print(t("reset_done_notify"));
+  lcd.print(settings::t("reset_done_notify"));
   delay(1500);
   forceRedraw = true;
 }
 
 void setupThirdButton() {
   const char* actions[] = {
-    t("action_none"),
-    t("action_panic_all"),
-    t("action_custom_osc"),
-    t("action_goto_cue"),
-    t("action_stop_all"),
-    t("action_resume_all"),
-    t("action_go"),
-    t("action_panic"),
-    t("action_save")
+    settings::t("action_none"),
+    settings::t("action_panic_all"),
+    settings::t("action_custom_osc"),
+    settings::t("action_goto_cue"),
+    settings::t("action_stop_all"),
+    settings::t("action_resume_all"),
+    settings::t("action_go"),
+    settings::t("action_panic"),
+    settings::t("action_save")
   };
 
   int actionCount = sizeof(actions) / sizeof(actions[0]);
@@ -110,39 +115,39 @@ void setupThirdButton() {
       lastPos = newPos;
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(t("select_action"));
+      lcd.print(settings::t("select_action"));
       lcd.setCursor(0, 1);
       lcd.print(actions[selected]);
     }
 
-    if (digitalRead(ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
+    if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
       lastPressTime = millis();
       thirdButtonAction = (ThirdButtonAction)selected;
 
       if (thirdButtonAction == ACTION_FIRE_CUSTOM) {
-        lcd.clear(); lcd.print(t("enter_osc_path"));
+        lcd.clear(); lcd.print(settings::t("enter_osc_path"));
         delay(500);
-        initTextInput();
-        while (!updateTextInput()) encoder.tick();
-        if (!didUserCancel()) customOscPath = getFinalInput();
+        utilities::initTextInput();
+        while (!utilities::updateTextInput()) encoder.tick();
+        if (!utilities::didUserCancel()) customOscPath = utilities::getFinalInput();
       }
 
       if (thirdButtonAction == ACTION_GOTO_CUE) {
-        lcd.clear(); lcd.print(t("enter_cue_id"));
+        lcd.clear(); lcd.print(settings::t("enter_cue_id"));
         delay(500);
-        initTextInput();
-        while (!updateTextInput()) encoder.tick();
-        if (!didUserCancel()) gotoCueID = getFinalInput();
+        utilities::initTextInput();
+        while (!utilities::updateTextInput()) encoder.tick();
+        if (!utilities::didUserCancel()) gotoCueID = utilities::getFinalInput();
       }
 
       saveSettings();
       lcd.clear();
-      lcd.print(t("saved_notify"));
+      lcd.print(settings::t("saved_notify"));
       delay(800);
       break;
     }
 
-    if (digitalRead(BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+    if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
       lastPressTime = millis();
       break;
     }
@@ -152,7 +157,7 @@ void setupThirdButton() {
 void performOTAUpdate() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print(t("checking_update"));
+  lcd.print(settings::t("checking_update"));
 
   delay(1000);
 
@@ -165,19 +170,19 @@ void performOTAUpdate() {
     case HTTP_UPDATE_FAILED:
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(t("update_failed"));
+      lcd.print(settings::t("update_failed"));
       lcd.setCursor(0, 1);
       lcd.print(String(httpUpdate.getLastError()));
       break;
     case HTTP_UPDATE_NO_UPDATES:
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(t("no_updates"));
+      lcd.print(settings::t("no_updates"));
       break;
     case HTTP_UPDATE_OK:
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(t("update_done"));
+      lcd.print(settings::t("update_done"));
       break;
   }
 
@@ -187,14 +192,14 @@ void performOTAUpdate() {
 
 void handleSettingsMenu() {
   const char* items[] = {
-    t("scroll_lock_item"),
-    t("third_button_item"),
-    t("workspace_id_item"),
-    t("network_item"),
-    t("factory_reset_item"),
-    t("device_info_item"),
-    t("language_item"),
-    t("update_item")
+    settings::t("scroll_lock_item"),
+    settings::t("third_button_item"),
+    settings::t("workspace_id_item"),
+    settings::t("network_item"),
+    settings::t("factory_reset_item"),
+    settings::t("device_info_item"),
+    settings::t("language_item"),
+    settings::t("update_item")
   };
 
   int itemCount = sizeof(items) / sizeof(items[0]);
@@ -209,7 +214,7 @@ void handleSettingsMenu() {
     forceRedraw = false;
   }
 
-  if (digitalRead(ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
+  if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
     lcd.clear();
     switch (selectedIndex) {
@@ -218,7 +223,7 @@ void handleSettingsMenu() {
         saveSettings();
         lcd.clear();
         lcd.setCursor(0, 0);
-        lcd.print(scrollLockEnabled ? t("enabled") : t("disabled"));
+        lcd.print(scrollLockEnabled ? settings::t("enabled") : settings::t("disabled"));
         delay(1000);
         break;
       case 1:
@@ -226,35 +231,35 @@ void handleSettingsMenu() {
         break;
       case 2:
         lcd.clear(); 
-        initPrefilledInput(workspaceID);
-        while (!updateTextInput()) encoder.tick();
-        if (!didUserCancel()) {
-          workspaceID = getFinalInput();
+        utilities::initPrefilledInput(workspaceID);
+        while (!utilities::updateTextInput()) encoder.tick();
+        if (!utilities::didUserCancel()) {
+          workspaceID = utilities::getFinalInput();
           saveSettings();
           lcd.clear(); 
-          lcd.print(t("saved_notify"));
+          lcd.print(settings::t("saved_notify"));
           delay(800);
         }
         break;
       case 3:
-        currentState = NETWORK_MENU;
+        currentState = settings::NETWORK_MENU;
         break;
       case 4:
         lcd.clear();
-        lcd.print(t("confirm_reset"));
+        lcd.print(settings::t("confirm_reset"));
         lcd.setCursor(0, 1);
-        lcd.print(t("click_yes"));
+        lcd.print(settings::t("click_yes"));
 
         while (true) {
           encoder.tick();
-          if (digitalRead(ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
+          if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
             lastPressTime = millis();
             performFactoryReset();
             break;
           }
-          if (digitalRead(BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+          if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
             lastPressTime = millis();
-            lcd.clear(); lcd.print(t("cancelled_label"));
+            lcd.clear(); lcd.print(settings::t("cancelled_label"));
             delay(1000);
             break;
           }
@@ -265,17 +270,17 @@ void handleSettingsMenu() {
         break;
       case 6:
         lcd.clear();
-        lcd.print(t("language_label"));
+        lcd.print(settings::t("language_label"));
         delay(1000);
-        setLanguage(getLanguage() == LANG_EN ? LANG_ES : LANG_EN);
+        setLanguage(settings::getLanguage() == settings::LANG_EN ? settings::LANG_ES : settings::LANG_EN);
         lcd.clear();
-        lcd.print(getLanguage() == LANG_EN ? "English" : "Espanol");
+        lcd.print(settings::getLanguage() == settings::LANG_EN ? "English" : "Espanol");
         delay(1000);
         break;
       case 7:
         if (WiFi.status() != WL_CONNECTED) {
           lcd.clear();
-          lcd.print(t("no_wifi"));
+          lcd.print(settings::t("no_wifi"));
           delay(1000);
         } else {
           performOTAUpdate();
@@ -286,9 +291,9 @@ void handleSettingsMenu() {
       lastDrawnIndex = -1;
   }
 
-  if (digitalRead(BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+  if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
-    currentState = MAIN_MENU;
+    currentState = settings::MAIN_MENU;
     resetMenuState();
     lastDrawnIndex = -1;
     lcd.clear();
@@ -296,7 +301,7 @@ void handleSettingsMenu() {
 }
 
 void handleThirdButton() {
-  if (digitalRead(THIRD_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+  if (digitalRead(settings::THIRD_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
     if (WiFi.status() != WL_CONNECTED) {
       Serial.println("Not connected to Wi-Fi. Cannot send OSC.");
@@ -304,14 +309,14 @@ void handleThirdButton() {
     }
 
     IPAddress targetIP;
-    if (!targetIP.fromString(ipAddress)) {
-      Serial.println("Invalid IP address: " + ipAddress);
+    if (!targetIP.fromString(settings::ipAddress)) {
+      Serial.println("Invalid IP address: " + settings::ipAddress);
       return;
     }
 
     String path;
 
-    MenuState returnState = currentState;
+    settings::MenuState returnState = currentState;
 
     switch (thirdButtonAction) {
       case ACTION_NONE:
@@ -320,7 +325,7 @@ void handleThirdButton() {
         if (workspaceID == "") {
           Serial.println("Workspace ID not set.");
           lcd.clear(); 
-          lcd.print(t("no_workspace_id"));
+          lcd.print(settings::t("no_workspace_id"));
           delay(800);
           lcd.clear();
           currentState = returnState;
@@ -340,7 +345,7 @@ void handleThirdButton() {
         if (workspaceID == "") {
           Serial.println("Workspace ID not set.");
           lcd.clear(); 
-          lcd.print(t("no_workspace_id"));
+          lcd.print(settings::t("no_workspace_id"));
           delay(800);
           currentState = returnState;
           resetMenuState();
@@ -353,7 +358,7 @@ void handleThirdButton() {
         if (workspaceID == "") {
           Serial.println("Workspace ID not set.");
           lcd.clear(); 
-          lcd.print(t("no_workspace_id"));
+          lcd.print(settings::t("no_workspace_id"));
           delay(800);
           currentState = returnState;
           resetMenuState();
@@ -378,9 +383,9 @@ void handleThirdButton() {
       OSCMessage msg(path.c_str());
       Serial.print("Sending OSC: ");
       Serial.println(path);
-      udp.beginPacket(targetIP, port.toInt());
-      msg.send(udp);
-      udp.endPacket();
+      settings::udp.beginPacket(targetIP, settings::port.toInt());
+      msg.send(settings::udp);
+      settings::udp.endPacket();
       msg.empty();
     } else {
       Serial.println("OSC address is empty.");
@@ -398,19 +403,19 @@ void handleDeviceInfo() {
 
   const char* version = "v1.0.0";
   String name = "Cuervo Blanco";
-  String wsID = workspaceID.length() ? workspaceID : "<none>";
-  String ip = ipAddress.length() ? ipAddress : "<unset>";
-  String portStr = port;
-  String scroll = scrollLockEnabled ? "ON" : "OFF";
+  String wsID = workspaceID.length() ? workspaceID : settings::t("none");
+  String ip = settings::ipAddress.length() ? settings::ipAddress : settings::t("unset");
+  String portStr = settings::port;
+  String scroll = scrollLockEnabled ? settings::t("ON") : settings::t("OFF");
 
   const char* actionStrs[] = {
-    t("action_none"), t("action_panic_all"), t("action_custom_osc"),
-    t("action_goto_cue"), t("action_stop_all"), t("action_resume_all")
+    settings::t("action_none"), settings::t("action_panic_all"), settings::t("action_custom_osc"),
+    settings::t("action_goto_cue"), settings::t("action_stop_all"), settings::t("action_resume_all")
   };
   String action = actionStrs[thirdButtonAction];
 
   lcd.setCursor(0, 0); 
-  lcd.print(t("version_label")); 
+  lcd.print(settings::t("version_label")); 
   lcd.print(version);
   lcd.setCursor(0, 1); 
   lcd.print(name);
@@ -425,19 +430,19 @@ void handleDeviceInfo() {
 
       switch (page) {
         case 1:
-          lcd.setCursor(0, 0); lcd.print(t("workspace_id_label"));
+          lcd.setCursor(0, 0); lcd.print(settings::t("workspace_id_label"));
           lcd.setCursor(0, 1); lcd.print(wsID.substring(0, 16));
           break;
         case 2:
-          lcd.setCursor(0, 0); lcd.print(t("qlab_ip_label"));
+          lcd.setCursor(0, 0); lcd.print(settings::t("qlab_ip_label"));
           lcd.setCursor(0, 1); lcd.print(ip.substring(0, 16));
           break;
         case 3:
-          lcd.setCursor(0, 0); lcd.print(t("port_label")); lcd.print(portStr);
-          lcd.setCursor(0, 1); lcd.print(t("scroll_label")); lcd.print(scroll);
+          lcd.setCursor(0, 0); lcd.print(settings::t("port_label")); lcd.print(portStr);
+          lcd.setCursor(0, 1); lcd.print(settings::t("scroll_label")); lcd.print(scroll);
           break;
         case 4:
-          lcd.setCursor(0, 0); lcd.print(t("third_btn_action_label"));
+          lcd.setCursor(0, 0); lcd.print(settings::t("third_btn_action_label"));
           lcd.setCursor(0, 1); lcd.print(action.substring(0, 16));
           break;
       }
@@ -446,7 +451,7 @@ void handleDeviceInfo() {
       lastChange = now;
     }
 
-    if (digitalRead(BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+    if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
       lastPressTime = millis();
       break;
     }
@@ -454,8 +459,9 @@ void handleDeviceInfo() {
     delay(10);
   }
 
-  currentState = SETTINGS_MENU;
+  currentState = settings::SETTINGS_MENU;
   resetMenuState();
   lcd.clear();
 }
 
+} // namespace osc_controller::menus

@@ -1,7 +1,11 @@
-#include "MainMenu.h"
-#include "AppState.h"
-#include "LanguageManager.h"
+#include "Globals.h"
+#include "Menus/MainMenu.h"
+#include "Settings/AppState.h"
+#include "Settings/LanguageManager.h"
 
+namespace osc_controller::menus {
+
+using namespace osc_controller;
 
 void resetMenuState() {
   encoder.setPosition(0);
@@ -23,9 +27,9 @@ void drawMenu(const char* const items[], int itemCount) {
 
 void handleMainMenu() {
   const char* items[] = {
-    t("menu_cues"), 
-    t("menu_run_show"), 
-    t("menu_settings")
+    settings::t("menu_cues"), 
+    settings::t("menu_run_show"), 
+    settings::t("menu_settings")
   };
   int itemCount = 3;
 
@@ -39,15 +43,16 @@ void handleMainMenu() {
     forceRedraw = false;
   }
 
-  if (digitalRead(ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
+  if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
     switch (selectedIndex) {
-      case 0: currentState = CUES_MENU; break;
-      case 1: currentState = RUN_SHOW_MENU; break;
-      case 2: currentState = SETTINGS_MENU; break;
+      case 0: currentState = settings::CUES_MENU; break;
+      case 1: currentState = settings::RUN_SHOW_MENU; break;
+      case 2: currentState = settings::SETTINGS_MENU; break;
     }
     resetMenuState();
     lastDrawnIndex = -1;
   }
 }
 
+} // namespace osc_controller::menus

@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "CueStorage.h"
 
+namespace osc_controller::settings {
 extern WiFiUDP udp;
 
 void loadNetworkSettings();
@@ -19,4 +20,4 @@ extern String password;
 extern String passcode;
 extern String ipAddress;
 extern String port;
-
+} // namespace Settings

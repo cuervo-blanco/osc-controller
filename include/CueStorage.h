@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 
+namespace osc_controller {
 enum CueType {
   CUE_TARGET,      // e.g. /cue/1/start
   CUE_WORKSPACE    // e.g. /go or /panic
@@ -25,3 +26,4 @@ void reorderCues(uint8_t fromIndex, uint8_t toIndex);
 
 Cue* getCue(uint8_t index);
 int getCueCount();
+} // namespace osc_controller

@@ -2,9 +2,10 @@
 #include <OSCMessage.h>
 #include <WiFiUdp.h>
 
-#include "NetworkSettings.h"
-#include "WiFiConnector.h"
+#include "Settings/NetworkSettings.h"
+#include "Settings/WiFiConnector.h"
 
+namespace osc_controller::settings {
 Preferences prefs;
 
 WiFiUDP udp;
@@ -113,3 +114,4 @@ void sendCueOSC(const Cue& cue) {
   msg.empty();
 }
 
+} // namespace osc_controller::settings

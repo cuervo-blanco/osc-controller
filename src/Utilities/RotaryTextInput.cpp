@@ -2,11 +2,15 @@
 #include <LiquidCrystal_I2C.h>
 #include <RotaryEncoder.h>
 
-#include "RotaryTextInput.h"
-#include "AppState.h"
+#include "Utilities/RotaryTextInput.h"
+#include "Settings/AppState.h"
+
+namespace osc_controller::utilities {
+
+using namespace osc_controller;
 
 static LiquidCrystal_I2C lcd(0x27, 16, 2);
-static RotaryEncoder encoder(ROTARY_DT, ROTARY_CLK);
+static RotaryEncoder encoder(settings::ROTARY_DT, settings::ROTARY_CLK);
 
 static String inputBuffer = "";
 static const int maxVisibleChars = 16;
@@ -60,9 +64,9 @@ void initTextInput() {
   activeCharSet = charSetText;
   numChars = sizeof(charSetText) - 1;
 
-  pinMode(FIRE_BUTTON, INPUT_PULLUP);
-  pinMode(ENCODER_SW, INPUT_PULLUP);
-  pinMode(BACK_BUTTON, INPUT_PULLUP);
+  pinMode(settings::FIRE_BUTTON, INPUT_PULLUP);
+  pinMode(settings::ENCODER_SW, INPUT_PULLUP);
+  pinMode(settings::BACK_BUTTON, INPUT_PULLUP);
 
   lcd.init();
   lcd.backlight();
@@ -86,9 +90,9 @@ void initNumberInput(int maxLen) {
   activeCharSet = charSetNumbers;
   numChars = sizeof(charSetNumbers) - 1;
 
-  pinMode(FIRE_BUTTON, INPUT_PULLUP);
-  pinMode(ENCODER_SW, INPUT_PULLUP);
-  pinMode(BACK_BUTTON, INPUT_PULLUP);
+  pinMode(settings::FIRE_BUTTON, INPUT_PULLUP);
+  pinMode(settings::ENCODER_SW, INPUT_PULLUP);
+  pinMode(settings::BACK_BUTTON, INPUT_PULLUP);
 
   lcd.init();
   lcd.backlight();
@@ -112,9 +116,9 @@ void initIPInput() {
   activeCharSet = charSetIP;
   numChars = sizeof(charSetIP) - 1;
 
-  pinMode(FIRE_BUTTON, INPUT_PULLUP);
-  pinMode(ENCODER_SW, INPUT_PULLUP);
-  pinMode(BACK_BUTTON, INPUT_PULLUP);
+  pinMode(settings::FIRE_BUTTON, INPUT_PULLUP);
+  pinMode(settings::ENCODER_SW, INPUT_PULLUP);
+  pinMode(settings::BACK_BUTTON, INPUT_PULLUP);
 
   lcd.init();
   lcd.backlight();
@@ -148,9 +152,9 @@ void initPrefilledInput(const String& initialText, bool numberOnly, bool ipOnly,
     numChars = sizeof(charSetText) - 1;
   }
 
-  pinMode(FIRE_BUTTON, INPUT_PULLUP);
-  pinMode(ENCODER_SW, INPUT_PULLUP);
-  pinMode(BACK_BUTTON, INPUT_PULLUP);
+  pinMode(settings::FIRE_BUTTON, INPUT_PULLUP);
+  pinMode(settings::ENCODER_SW, INPUT_PULLUP);
+  pinMode(settings::BACK_BUTTON, INPUT_PULLUP);
 
   lcd.init();
   lcd.backlight();
@@ -182,7 +186,7 @@ bool updateTextInput() {
     lcd.setCursor(cursorPos, 0);
   }
 
-  if (digitalRead(ENCODER_SW) == LOW) {
+  if (digitalRead(settings::ENCODER_SW) == LOW) {
     delay(200);
 
     if ((int)inputBuffer.length() < maxInputLength) {
@@ -200,7 +204,7 @@ bool updateTextInput() {
     }
   }
 
-  if (digitalRead(BACK_BUTTON) == LOW) {
+  if (digitalRead(settings::BACK_BUTTON) == LOW) {
     delay(200);
 
     if (inputBuffer.length() > 0) {
@@ -224,13 +228,9 @@ bool updateTextInput() {
     updateLCDLine();
   }
 
-  if (digitalRead(FIRE_BUTTON) == LOW) {
+  if (digitalRead(settings::FIRE_BUTTON) == LOW) {
     delay(200);
     lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("You entered:");
-    lcd.setCursor(0, 1);
-    lcd.print(inputBuffer.substring(0, 16));
     finished = true;
     return true;
   }
@@ -242,3 +242,4 @@ String getFinalInput() {
   return inputBuffer;
 }
 
+} // namespace osc_controller::utilities

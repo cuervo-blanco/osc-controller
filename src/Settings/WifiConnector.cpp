@@ -1,10 +1,12 @@
 #include <Preferences.h>
 
-#include "WiFiConnector.h"
-#include "RotaryTextInput.h"
-#include "NetworkSettings.h"
+#include "Settings/WiFiConnector.h"
+#include "Settings/AppState.h"
+#include "Settings/NetworkSettings.h"
+#include "Settings/LanguageManager.h"
+#include "Utilities/RotaryTextInput.h"
 
-#define BACKSPACE_BUTTON 13
+namespace osc_controller::settings {
 
 static bool selecting = true;
 static bool enteringPassword = false;
@@ -13,10 +15,10 @@ static int selectedNetwork = 0;
 static void showNetworkList(LiquidCrystal_I2C& lcd, int index, int total) {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Select Network:");
+  lcd.print(t("select_network"));
   lcd.setCursor(0, 1);
   String ssid = WiFi.SSID(index);
-  lcd.print(ssid.substring(0, 16)); // truncate to fit display
+  lcd.print(ssid.substring(0, 16));
 }
 
 void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderButtonPin) {
@@ -29,7 +31,7 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
   lcd.backlight();
 
   lcd.setCursor(0, 0);
-  lcd.print("Scanning WiFi...");
+  lcd.print(t("scanning_wifi"));
   delay(1000);
 
   WiFi.mode(WIFI_STA);
@@ -40,7 +42,7 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
   if (n == 0) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("No networks!");
+    lcd.print(t("no_networks"));
     delay(500);
     return;
   }
@@ -64,7 +66,7 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
       selecting = false;
     }
 
-    if (digitalRead(BACKSPACE_BUTTON) == LOW) {
+    if (digitalRead(BACK_BUTTON) == LOW) {
       delay(300);
       lcd.clear();
       delay(500);
@@ -80,26 +82,26 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
   } else {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print("Enter password:");
+    lcd.print(t("enter_password"));
     delay(1000);
-    initTextInput();
+    utilities::initTextInput();
     enteringPassword = true;
   }
 
   while (enteringPassword) {
-    if (updateTextInput()) {
+    if (utilities::updateTextInput()) {
       enteringPassword = false;
-      if (didUserCancel()) {
+      if (utilities::didUserCancel()) {
         lcd.clear();
-        lcd.print("Cancelled");
+        lcd.print(t("cancelled"));
         delay(500);
         return;
       }
-      password = getFinalInput();
+      password = utilities::getFinalInput();
 
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("Connecting...");
+      lcd.print(t("connecting"));
       WiFi.begin(ssid.c_str(), password.c_str());
 
       unsigned long startAttemptTime = millis();
@@ -112,15 +114,15 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
         saveNetworkCredentials(ssid, password);
 
         lcd.setCursor(0, 0);
-        lcd.print("Connected!");
+        lcd.print(t("connected"));
         lcd.setCursor(0, 1);
         lcd.print(WiFi.localIP());
 
       } else {
         lcd.setCursor(0, 0);
-        lcd.print("Connect failed.");
+        lcd.print(t("connection_failed."));
         lcd.setCursor(0, 1);
-        lcd.print("Try again.");
+        lcd.print(t("try_again"));
       }
 
       delay(500);
@@ -128,3 +130,4 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
   }
 }
 
+} // namespace osc_controller::settings

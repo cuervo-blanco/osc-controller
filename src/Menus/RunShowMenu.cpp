@@ -1,15 +1,18 @@
 #include <WiFiUdp.h>
 #include <OSCMessage.h>
 
-#include "RunShowMenu.h"
-#include "MainMenu.h"
+#include "Globals.h"
+#include "Menus/RunShowMenu.h"
+#include "Menus/MainMenu.h"
+#include "Menus/SettingsMenu.h"
+#include "Settings/AppState.h"
+#include "Settings/NetworkSettings.h"
+#include "Settings/LanguageManager.h"
 #include "CueStorage.h"
-#include "AppState.h"
-#include "NetworkSettings.h"
-#include "SettingsMenu.h"
-#include "LanguageManager.h"
 
-#define BACK_BUTTON 13
+namespace osc_controller::menus {
+
+using namespace osc_controller;
 
 static int currentCueIndex = 0;
 static long lastEncoderPos = -999;
@@ -20,9 +23,9 @@ void handleRunShowMenu() {
   int count = getCueCount();
   if (count == 0) {
     lcd.clear();
-    lcd.print(t("no_cues_to_run"));
+    lcd.print(settings::t("no_cues_to_run"));
     delay(1000);
-    currentState = MAIN_MENU;
+    currentState = settings::MAIN_MENU;
     return;
   }
 
@@ -30,7 +33,7 @@ void handleRunShowMenu() {
   long newPos = encoder.getPosition();
   int scrollIndex = (newPos % count + count) % count;
 
-  if (showComplete && currentState != RUN_SHOW_MENU) {
+  if (showComplete && currentState != settings::RUN_SHOW_MENU) {
     currentCueIndex = 0;
     encoder.setPosition(0);
     lastEncoderPos = -999;
@@ -38,11 +41,11 @@ void handleRunShowMenu() {
     fireButtonPreviouslyDown = false;
   }
 
-  if (isScrollLockEnabled() && newPos != lastEncoderPos && !showComplete) {
+  if (menus::isScrollLockEnabled() && newPos != lastEncoderPos && !showComplete) {
     lastEncoderPos = newPos;
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(t("scroll_locked"));
+    lcd.print(settings::t("scroll_locked"));
     delay(600);
     forceRedraw = true;
   }
@@ -56,15 +59,15 @@ void handleRunShowMenu() {
     if (!shown) {
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(t("show_complete"));
+      lcd.print(settings::t("show_complete"));
       lcd.setCursor(0, 1);
-      lcd.print(t("press_back"));
+      lcd.print(settings::t("press_back"));
       shown = true;
     }
 
-    if (digitalRead(BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+    if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
       lastPressTime = millis();
-      currentState = MAIN_MENU;
+      currentState = settings::MAIN_MENU;
       currentCueIndex = 0;
       lastEncoderPos = -999;
       showComplete = false;
@@ -80,9 +83,9 @@ void handleRunShowMenu() {
   Cue* cue = getCue(currentCueIndex);
   if (!cue) {
     lcd.clear();
-    lcd.print(t("invalid_cue"));
+    lcd.print(settings::t("invalid_cue"));
     delay(1000);
-    currentState = MAIN_MENU;
+    currentState = settings::MAIN_MENU;
     return;
   }
 
@@ -101,15 +104,15 @@ void handleRunShowMenu() {
     forceRedraw = false;
   }
 
-  bool fireButtonDown = (digitalRead(FIRE_BUTTON) == LOW);
+  bool fireButtonDown = (digitalRead(settings::FIRE_BUTTON) == LOW);
   if (!fireButtonPreviouslyDown && fireButtonDown && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
 
-    sendCueOSC(*cue);
+    settings::sendCueOSC(*cue);
 
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(("fired_cue_label"));
+    lcd.print(settings::t("fired_cue_label"));
     lcd.print(currentCueIndex);
     lcd.setCursor(0, 1);
     lcd.print(cue->oscCommand.substring(0, 16));
@@ -123,9 +126,9 @@ void handleRunShowMenu() {
       showComplete = true;
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print(t("show_complete"));
+      lcd.print(settings::t("show_complete"));
       lcd.setCursor(0, 1);
-      lcd.print(t("press_back"));
+      lcd.print(settings::t("press_back"));
     }
 
     lastDrawnIndex = -1;
@@ -133,9 +136,9 @@ void handleRunShowMenu() {
   }
   fireButtonPreviouslyDown = fireButtonDown;
 
-  if (digitalRead(BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+  if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
-    currentState = MAIN_MENU;
+    currentState = settings::MAIN_MENU;
     currentCueIndex = 0;
     lastEncoderPos = -999;
     showComplete = false;
@@ -145,3 +148,4 @@ void handleRunShowMenu() {
   }
 }
 
+} // namespace osc_controller::menus

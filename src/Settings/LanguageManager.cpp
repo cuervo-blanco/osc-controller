@@ -1,6 +1,7 @@
-#include "LanguageManager.h"
 #include <Preferences.h>
+#include "Settings/LanguageManager.h"
 
+namespace osc_controller::settings {
 static Language currentLang = LANG_EN;
 Preferences langPrefs;
 
@@ -113,6 +114,10 @@ const char* t(const char* key) {
     if (strcmp(key, "confirm_reset") == 0) return "Confirm Reset?";
     if (strcmp(key, "click_yes") == 0) return "Click = Yes";
     if (strcmp(key, "cancelled") == 0) return "Cancelled";
+    if (strcmp(key, "connecting") == 0) return "Connecting...";
+    if (strcmp(key, "connected") == 0) return "Connected";
+    if (strcmp(key, "connection_failed") == 0) return "Connection failed.";
+    if (strcmp(key, "try_again") == 0) return "Try again.";
     if (strcmp(key, "language_label") == 0) return "Idioma/Language";
     if (strcmp(key, "version_label") == 0) return "Version:";
     if (strcmp(key, "workspace_id_label") == 0) return "Workspace ID:";
@@ -122,6 +127,14 @@ const char* t(const char* key) {
     if (strcmp(key, "third_btn_action_label") == 0) return "3rd Btn Action:";
     if (strcmp(key, "no_workspace_id") == 0) return "No workspace ID";
     if (strcmp(key, "no_cues_to_run") == 0) return "No cues to run";
+    if (strcmp(key, "unset") == 0) return "<unset>";
+    if (strcmp(key, "none") == 0) return "<none>";
+    if (strcmp(key, "OFF") == 0) return "OFF";
+    if (strcmp(key, "ON") == 0) return "ON";
+    if (strcmp(key, "scanning_wifi") == 0) return "Scanning WiFi...";
+    if (strcmp(key, "no_networks") == 0) return "No networks!";
+    if (strcmp(key, "enter_password") == 0) return "Enter password:";
+    if (strcmp(key, "select_network") == 0) return "Select Network:";
   }
 
   if (currentLang == LANG_ES) {
@@ -211,6 +224,10 @@ const char* t(const char* key) {
     if (strcmp(key, "confirm_reset") == 0) return "¿Confirmar Reset?";
     if (strcmp(key, "click_yes") == 0) return "Click = Si";
     if (strcmp(key, "cancelled") == 0) return "Cancelado";
+    if (strcmp(key, "connecting") == 0) return "Conectando...";
+    if (strcmp(key, "connected") == 0) return "Conectado!";
+    if (strcmp(key, "connection_failed") == 0) return "Conexion fallada.";
+    if (strcmp(key, "try_again") == 0) return "Vuelve a intentar.";
     if (strcmp(key, "language_label") == 0) return "Idioma/Language";
     if (strcmp(key, "version_label") == 0) return "Version:";
     if (strcmp(key, "workspace_id_label") == 0) return "ID Workspace:";
@@ -220,8 +237,17 @@ const char* t(const char* key) {
     if (strcmp(key, "third_btn_action_label") == 0) return "Accion boton 3:";
     if (strcmp(key, "no_workspace_id") == 0) return "Sin ID espacio";
     if (strcmp(key, "no_cues_to_run") == 0) return "No hay cues";
+    if (strcmp(key, "unset") == 0) return "<no_definido>";
+    if (strcmp(key, "none") == 0) return "<no_definido>";
+    if (strcmp(key, "OFF") == 0) return "APAGADO";
+    if (strcmp(key, "ON") == 0) return "ENCENDIDO";
+    if (strcmp(key, "scanning_wifi") == 0) return "Escaneando Wifi...";
+    if (strcmp(key, "no_networks") == 0) return "No hay redes!";
+    if (strcmp(key, "enter_password") == 0) return "Ingresar contrasena";
+    if (strcmp(key, "select_network") == 0) return "Escoger Red:";
   }
 
   return key;
 }
 
+} // namespace osc_controller::settings

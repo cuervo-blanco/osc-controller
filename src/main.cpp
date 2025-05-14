@@ -1,49 +1,54 @@
 #include <WiFiUdp.h>
 #include <Wire.h>
 #include <OSCMessage.h>
-#include "MainMenu.h"
-#include "NetworkMenu.h"
-#include "CuesMenu.h"
-#include "WiFiConnector.h"
-#include "RotaryTextInput.h"
-#include "AppState.h"
-#include "NetworkSettings.h"
-#include "SettingsMenu.h"
-#include "RunShowMenu.h"
+#include "Menus/MainMenu.h"
+#include "Menus/NetworkMenu.h"
+#include "Menus/CuesMenu.h"
+#include "Menus/SettingsMenu.h"
+#include "Menus/RunShowMenu.h"
+#include "Settings/AppState.h"
+#include "Settings/WiFiConnector.h"
+#include "Settings/NetworkSettings.h"
+#include "Settings/LanguageManager.h"
+#include "Utilities/RotaryTextInput.h"
+#include "Globals.h"
 #include "CueStorage.h"
-#include "LanguageManager.h"
 
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-RotaryEncoder encoder(ROTARY_DT, ROTARY_CLK);
+void handleEnterText(String& targetField, osc_controller::settings::MenuState returnState) {
+  if (osc_controller::utilities::updateTextInput()) {
+    if (!osc_controller::utilities::didUserCancel()) {
+      targetField = osc_controller::utilities::getFinalInput();
+      if (returnState == osc_controller::settings::NETWORK_MENU && &targetField == &osc_controller::settings::port) {
+        osc_controller::settings::savePort(osc_controller::settings::port.toInt());
+      }
+    }
 
-MenuState currentState = MAIN_MENU;
-
-int selectedIndex = 0;
-
-bool forceRedraw = true;
-unsigned long lastPressTime = 0;
-const unsigned long debounceDelay = 300;
+    osc_controller::currentState = returnState;
+    osc_controller::menus::resetMenuState();
+  }
+}
 
 void setup() {
-  pinMode(ENCODER_SW, INPUT_PULLUP);
-  pinMode(BACK_BUTTON, INPUT_PULLUP);
-  pinMode(FIRE_BUTTON, INPUT_PULLUP);
-  pinMode(THIRD_BUTTON, INPUT_PULLUP);
-  Wire.begin(SDA_PIN, SCL_PIN);
+  using namespace osc_controller;
+  pinMode(settings::ENCODER_SW, INPUT_PULLUP);
+  pinMode(settings::BACK_BUTTON, INPUT_PULLUP);
+  pinMode(settings::FIRE_BUTTON, INPUT_PULLUP);
+  pinMode(settings::THIRD_BUTTON, INPUT_PULLUP);
+  Wire.begin(settings::SDA_PIN, settings::SCL_PIN);
 
   Serial.begin(115200);
   delay(1000);
   Serial.println("Booting...");
 
-  loadLanguageSetting();
-  loadNetworkSettings();
+  settings::loadLanguageSetting();
+  settings::loadNetworkSettings();
 
-  if (connectedSSID != "" && password != "") {
+  if (settings::connectedSSID != "" && settings::password != "") {
     WiFi.mode(WIFI_STA);
 
     Serial.print("Connecting to ");
-    Serial.println(connectedSSID);
-    WiFi.begin(connectedSSID.c_str(), password.c_str());
+    Serial.println(settings::connectedSSID);
+    WiFi.begin(settings::connectedSSID.c_str(), settings::password.c_str());
 
     unsigned long startAttemptTime = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 8000) {
@@ -54,7 +59,7 @@ void setup() {
     if (WiFi.status() == WL_CONNECTED) {
       Serial.println("\nWiFi connected!");
       Serial.println(WiFi.localIP());
-      udp.begin(8888);
+      settings::udp.begin(8888);
     } else {
       Serial.println("\nWiFi connect failed!");
     }
@@ -64,57 +69,45 @@ void setup() {
 
   Serial.println("UDP started on port 8888");
 
-  loadSettings();
+  menus::loadSettings();
   loadCues(); 
 
-  lcd.init(); lcd.backlight();
+  lcd.init(); 
+  lcd.backlight();
   encoder.setPosition(0);
 }
 
-void handleEnterText(String& targetField, MenuState returnState) {
-  if (updateTextInput()) {
-    if (!didUserCancel()) {
-      targetField = getFinalInput();
-      if (returnState == NETWORK_MENU && &targetField == &port) {
-        savePort(port.toInt());
-      }
-    }
-
-    currentState = returnState;
-    resetMenuState();
-  }
-}
 
 void loop() {
+  using namespace osc_controller;
   encoder.tick();
-  static MenuState lastState = MAIN_MENU;
+  static settings::MenuState lastState = settings::MAIN_MENU;
   if (currentState != lastState) {
     forceRedraw = true;
     lastState = currentState;
   }
-  handleThirdButton();
+  menus::handleThirdButton();
 
   switch (currentState) {
-    case MAIN_MENU: handleMainMenu(); break;
+    case settings::MAIN_MENU: menus::handleMainMenu(); break;
 
-    case CUES_MENU: handleCuesMenu(); break;
-    case ADD_CUE_MENU: handleAddCueMenu(); break;
-    case EDIT_CUE_MENU: handleEditCueMenu(); break;
-    case DELETE_CUE_MENU: handleDeleteCueMenu(); break;
-    case CUE_CONTROL_MENU: handleCueControlMenu(); break;
-    case REORDER_CUE_MENU: handleReorderCueMenu(); break;
+    case settings::CUES_MENU: menus::handleCuesMenu(); break;
+    case settings::ADD_CUE_MENU: menus::handleAddCueMenu(); break;
+    case settings::EDIT_CUE_MENU: menus::handleEditCueMenu(); break;
+    case settings::DELETE_CUE_MENU: menus::handleDeleteCueMenu(); break;
+    case settings::CUE_CONTROL_MENU: menus::handleCueControlMenu(); break;
+    case settings::REORDER_CUE_MENU: menus::handleReorderCueMenu(); break;
 
-    case RUN_SHOW_MENU: handleRunShowMenu(); break;
+    case settings::RUN_SHOW_MENU: menus::handleRunShowMenu(); break;
 
-    case NETWORK_MENU: handleNetworkMenu(); break;
-    case ENTER_PORT: handleEnterText(port, NETWORK_MENU); break;
-    case ENTER_PASSCODE: handleEnterText(passcode, NETWORK_MENU); break;
-    case ENTER_QLAB_IP: handleEnterQLabIP(); break;
-    case SHOW_INFO: handleShowInfo(); break;
+    case settings::NETWORK_MENU: menus::handleNetworkMenu(); break;
+    case settings::ENTER_PORT: handleEnterText(settings::port, settings::NETWORK_MENU); break;
+    case settings::ENTER_PASSCODE: handleEnterText(settings::passcode, settings::NETWORK_MENU); break;
+    case settings::ENTER_QLAB_IP: menus::handleEnterQLabIP(); break;
+    case settings::SHOW_INFO: menus::handleShowInfo(); break;
 
-    case SETTINGS_MENU: handleSettingsMenu(); break;
+    case settings::SETTINGS_MENU: menus::handleSettingsMenu(); break;
 
   }
 
 }
-
