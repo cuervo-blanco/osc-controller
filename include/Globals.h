@@ -11,5 +11,7 @@ namespace osc_controller {
   extern bool forceRedraw;
   extern unsigned long lastPressTime;
   extern const unsigned long debounceDelay;
+
+  void handleEnterText(String& targetField, settings::MenuState returnState);
 }
 

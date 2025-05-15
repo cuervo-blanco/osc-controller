@@ -14,19 +14,6 @@
 #include "Globals.h"
 #include "CueStorage.h"
 
-void handleEnterText(String& targetField, osc_controller::settings::MenuState returnState) {
-  if (osc_controller::utilities::updateTextInput()) {
-    if (!osc_controller::utilities::didUserCancel()) {
-      targetField = osc_controller::utilities::getFinalInput();
-      if (returnState == osc_controller::settings::NETWORK_MENU && &targetField == &osc_controller::settings::port) {
-        osc_controller::settings::savePort(osc_controller::settings::port.toInt());
-      }
-    }
-
-    osc_controller::currentState = returnState;
-    osc_controller::menus::resetMenuState();
-  }
-}
 
 void setup() {
   using namespace osc_controller;
