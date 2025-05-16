@@ -50,6 +50,12 @@ void handleRunShowMenu() {
     forceRedraw = true;
   }
 
+  if (!menus::isScrollLockEnabled() && !showComplete && newPos != lastEncoderPos) {
+    currentCueIndex = scrollIndex;
+    lastEncoderPos = newPos;
+    forceRedraw = true;
+  }
+
   if (currentCueIndex >= count) {
     showComplete = true;
   }
@@ -94,7 +100,7 @@ void handleRunShowMenu() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Cue ");
-    lcd.print(currentCueIndex);
+    lcd.print(currentCueIndex + 1);
     lcd.print(":");
 
     lcd.setCursor(0, 1);
@@ -113,7 +119,7 @@ void handleRunShowMenu() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(settings::t("fired_cue_label"));
-    lcd.print(currentCueIndex);
+    lcd.print(currentCueIndex + 1);
     lcd.setCursor(0, 1);
     lcd.print(cue->oscCommand.substring(0, 16));
     delay(800);

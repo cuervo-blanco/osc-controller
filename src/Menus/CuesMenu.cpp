@@ -5,6 +5,7 @@
 #include "CueStorage.h"
 #include "Menus/CuesMenu.h"
 #include "Menus/MainMenu.h" 
+#include "Menus/CuePathType.h"
 #include "Settings/AppState.h"
 #include "Settings/NetworkSettings.h"
 #include "Settings/LanguageManager.h"
@@ -107,12 +108,53 @@ void handleAddCueMenu() {
   String cueID = "";
 
   if (selectedType == 4) {
+    const char* pathTypes[] = { "Cue", "Workspace", "Overrides", settings::t("custom_item") };
+    int pathTypeCount = sizeof(pathTypes) / sizeof(pathTypes[0]);
+    int selectedPathType = 0;
+    long lastPos = -999;
+
+    while (true) {
+      encoder.tick();
+      long newPos = encoder.getPosition();
+      selectedPathType = (newPos % pathTypeCount + pathTypeCount) % pathTypeCount;
+
+      if (newPos != lastPos) {
+        lastPos = newPos;
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print(settings::t("select_path_type"));
+        lcd.setCursor(0, 1);
+        lcd.print(pathTypes[selectedPathType]);
+      }
+
+      if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
+        lastPressTime = millis();
+        break;
+      }
+
+      if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+        lastPressTime = millis();
+        currentState = settings::CUES_MENU;
+        lcd.clear();
+        return;
+      }
+    }
+
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print(settings::t("enter_osc_path"));
     delay(500);
 
-    utilities::initTextInput();
+    String prefix = "";
+    switch (selectedPathType) {
+      case 0: prefix = "/cue/"; break;
+      case 1: prefix = "/workspace/"; break;
+      case 2: prefix = "/overrides/"; break;
+      case 3: prefix = ""; break;
+    }
+
+    utilities::initPrefilledInput(prefix, false, false, 64);
+
     while (!utilities::updateTextInput()) {
       encoder.tick();
     }
@@ -126,7 +168,7 @@ void handleAddCueMenu() {
     }
 
     osc = utilities::getFinalInput();
-    cueID = "custom";
+    cueID = osc;
   } else {
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -419,7 +461,7 @@ void handleReorderCueMenu() {
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print(settings::t("move_cue_label"));
-      lcd.print(cue->index);
+      lcd.print(cue->index + 1);
       lcd.setCursor(0, 1);
       lcd.print(cue->oscCommand.substring(0, 16));
     }
@@ -459,7 +501,7 @@ void handleReorderCueMenu() {
     if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
       lastPressTime = millis();
 
-      reorderCues(selected, targetPos);  // ← use your safe, tested function
+      reorderCues(selected, targetPos); 
 
       lcd.clear();
       lcd.print(settings::t("reordered_label"));

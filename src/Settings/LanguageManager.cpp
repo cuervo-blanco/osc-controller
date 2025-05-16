@@ -135,6 +135,8 @@ const char* t(const char* key) {
     if (strcmp(key, "no_networks") == 0) return "No networks!";
     if (strcmp(key, "enter_password") == 0) return "Enter password:";
     if (strcmp(key, "select_network") == 0) return "Select Network:";
+    if (strcmp(key, "custom_item") == 0) return "Custom";
+    if (strcmp(key, "select_path_type") == 0) return "Select Path Type";
   }
 
   if (currentLang == LANG_ES) {
@@ -245,6 +247,8 @@ const char* t(const char* key) {
     if (strcmp(key, "no_networks") == 0) return "No hay redes!";
     if (strcmp(key, "enter_password") == 0) return "Ingresar contrasena";
     if (strcmp(key, "select_network") == 0) return "Escoger Red:";
+    if (strcmp(key, "custom_item") == 0) return "Personalizado";
+    if (strcmp(key, "select_path_type") == 0) return "Escoger tipo:";
   }
 
   return key;
