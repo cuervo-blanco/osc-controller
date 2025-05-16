@@ -255,7 +255,7 @@ void handleEditCueMenu() {
       lastPressTime = millis();
 
       Cue* cue = getCue(selected);
-      utilities::initPrefilledInput(cue->oscCommand);
+      utilities::initPrefilledInput(cue->oscCommand, false, false, 99);
       while (!utilities::updateTextInput()) {
         encoder.tick();
       }
