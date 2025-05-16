@@ -102,7 +102,7 @@ const char* t(const char* key) {
     if (strcmp(key, "show_complete") == 0) return "Show Complete!";
     if (strcmp(key, "press_back") == 0) return "Press Back!";
     if (strcmp(key, "third_button_item") == 0) return "Third Button";
-    if (strcmp(key, "workspace_id_item") == 0) return "Workspace ID";
+    if (strcmp(key, "workspace_manager_item") == 0) return "Workspaces";
     if (strcmp(key, "network_item") == 0) return "Network";
     if (strcmp(key, "factory_reset_item") == 0) return "Factory Reset";
     if (strcmp(key, "device_info_item") == 0) return "Device Info";
@@ -126,6 +126,7 @@ const char* t(const char* key) {
     if (strcmp(key, "scroll_label") == 0) return "Scroll:";
     if (strcmp(key, "third_btn_action_label") == 0) return "3rd Btn Action:";
     if (strcmp(key, "no_workspace_id") == 0) return "No workspace ID";
+    if (strcmp(key, "no_workspaces") == 0) return "No workspaces";
     if (strcmp(key, "no_cues_to_run") == 0) return "No cues to run";
     if (strcmp(key, "unset") == 0) return "<unset>";
     if (strcmp(key, "none") == 0) return "<none>";
@@ -137,6 +138,15 @@ const char* t(const char* key) {
     if (strcmp(key, "select_network") == 0) return "Select Network:";
     if (strcmp(key, "custom_item") == 0) return "Custom";
     if (strcmp(key, "select_path_type") == 0) return "Select Path Type";
+    if (strcmp(key, "add_workspace_item") == 0) return "Add Workspace";
+    if (strcmp(key, "edit_workspace_item") == 0) return "Edit Workspace";
+    if (strcmp(key, "delete_workspace_item") == 0) return "Delete Workspace";
+    if (strcmp(key, "set_primary_workspace_item") == 0) return "Set Primary";
+    if (strcmp(key, "enter_workspace_name") == 0) return "Enter Workspace name";
+    if (strcmp(key, "workspace_added") == 0) return "Workspace added.";
+    if (strcmp(key, "select_primary") == 0) return "Set primary:";
+    if (strcmp(key, "primary_set") == 0) return "Primary Selected";
+
   }
 
   if (currentLang == LANG_ES) {
@@ -214,7 +224,7 @@ const char* t(const char* key) {
     if (strcmp(key, "show_complete") == 0) return "Show Completado!";
     if (strcmp(key, "press_back") == 0) return "Pressionar Atras!";
     if (strcmp(key, "third_button_item") == 0) return "3er Boton";
-    if (strcmp(key, "workspace_id_item") == 0) return "ID Workspace";
+    if (strcmp(key, "workspace_manager_item") == 0) return "Proyectos";
     if (strcmp(key, "network_item") == 0) return "Red";
     if (strcmp(key, "factory_reset_item") == 0) return "Resetear";
     if (strcmp(key, "device_info_item") == 0) return "Info Dispositivo";
@@ -249,6 +259,15 @@ const char* t(const char* key) {
     if (strcmp(key, "select_network") == 0) return "Escoger Red:";
     if (strcmp(key, "custom_item") == 0) return "Personalizado";
     if (strcmp(key, "select_path_type") == 0) return "Escoger tipo:";
+    if (strcmp(key, "add_workspace_item") == 0) return "Anadir Workspace";
+    if (strcmp(key, "edit_workspace_item") == 0) return "Editar Workspace";
+    if (strcmp(key, "delete_workspace_item") == 0) return "Borrar Workspace";
+    if (strcmp(key, "set_primary_workspace_item") == 0) return "Escoger Primario";
+    if (strcmp(key, "no_workspaces") == 0) return "No hay workspaces";
+    if (strcmp(key, "enter_workspace_name") == 0) return "Escribir nombre";
+    if (strcmp(key, "workspace_added") == 0) return "Workspace anadido";
+    if (strcmp(key, "select_primary") == 0) return "Escoger primario";
+    if (strcmp(key, "primary_set") == 0) return "Primario seleccionado";
   }
 
   return key;

@@ -6,6 +6,7 @@
 #include "Menus/CuesMenu.h"
 #include "Menus/SettingsMenu.h"
 #include "Menus/RunShowMenu.h"
+#include "Menus/WorkspaceManagerMenu.h"
 #include "Settings/AppState.h"
 #include "Settings/WiFiConnector.h"
 #include "Settings/NetworkSettings.h"
@@ -94,6 +95,7 @@ void loop() {
     case settings::SHOW_INFO: menus::handleShowInfo(); break;
 
     case settings::SETTINGS_MENU: menus::handleSettingsMenu(); break;
+    case settings::WORKSPACE_MANAGER_MENU: menus::handleWorkspaceManagerMenu(); break;
 
   }
 

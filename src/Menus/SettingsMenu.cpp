@@ -7,9 +7,11 @@
 #include "Globals.h"
 #include "Menus/SettingsMenu.h"
 #include "Menus/MainMenu.h"
+#include "Menus/WorkspaceManagerMenu.h"
 #include "Settings/NetworkSettings.h"
 #include "Settings/WifiConnector.h"
 #include "Settings/LanguageManager.h"
+#include "Settings/WorkspaceManager.h"
 #include "Utilities/RotaryTextInput.h"
 #include "CueStorage.h"
 
@@ -45,6 +47,9 @@ void loadSettings() {
   scrollLockEnabled = settingsPrefs.getBool("scrollLock", false);
   workspaceID = settingsPrefs.getString("workspaceID", "");
   settingsPrefs.end();
+  
+  settings::loadWorkspaces();
+  workspaceID = settings::getPrimaryWorkspace().name;
 }
 
 void saveSettings() {
@@ -53,7 +58,6 @@ void saveSettings() {
   settingsPrefs.putString("customPath", customOscPath);
   settingsPrefs.putString("gotoCue", gotoCueID);
   settingsPrefs.putBool("scrollLock", scrollLockEnabled);
-  settingsPrefs.putString("workspaceID", workspaceID);
   settingsPrefs.end();
 }
 
@@ -72,6 +76,10 @@ void performFactoryReset() {
   resetCues();
   settings::resetNetworkSettings(); 
   settingsPrefs.begin("settings", false);
+  settingsPrefs.clear();
+  settingsPrefs.end();
+
+  settingsPrefs.begin("workspaces", false);
   settingsPrefs.clear();
   settingsPrefs.end();
 
@@ -194,7 +202,7 @@ void handleSettingsMenu() {
   const char* items[] = {
     settings::t("scroll_lock_item"),
     settings::t("third_button_item"),
-    settings::t("workspace_id_item"),
+    settings::t("workspace_manager_item"),
     settings::t("network_item"),
     settings::t("factory_reset_item"),
     settings::t("device_info_item"),
@@ -230,16 +238,7 @@ void handleSettingsMenu() {
         setupThirdButton();
         break;
       case 2:
-        lcd.clear(); 
-        utilities::initPrefilledInput(workspaceID);
-        while (!utilities::updateTextInput()) encoder.tick();
-        if (!utilities::didUserCancel()) {
-          workspaceID = utilities::getFinalInput();
-          saveSettings();
-          lcd.clear(); 
-          lcd.print(settings::t("saved_notify"));
-          delay(800);
-        }
+        currentState = settings::WORKSPACE_MANAGER_MENU;
         break;
       case 3:
         currentState = settings::NETWORK_MENU;
