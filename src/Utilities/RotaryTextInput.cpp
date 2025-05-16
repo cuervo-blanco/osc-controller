@@ -50,9 +50,11 @@ void updateLCDLine() {
   lcd.print(visible);
 
   int cursorInWindow = inputBuffer.length() - scrollOffset; 
-  if (cursorInWindow < maxVisibleChars) { 
+
+if (cursorInWindow < maxVisibleChars) {
     lcd.setCursor(cursorInWindow, 0);
-    lcd.print('_');
+    lcd.print(activeCharSet[currentCharIndex]);
+    lcd.setCursor(cursorInWindow, 0); 
   }
 }
 
@@ -180,10 +182,7 @@ bool updateTextInput() {
   if (newPos != lastPos) {
     lastPos = newPos;
     currentCharIndex = (newPos % numChars + numChars) % numChars;
-
-    lcd.setCursor(cursorPos, 0);
-    lcd.print(activeCharSet[currentCharIndex]);
-    lcd.setCursor(cursorPos, 0);
+    updateLCDLine();
   }
 
   if (digitalRead(settings::ENCODER_SW) == LOW) {
@@ -192,7 +191,7 @@ bool updateTextInput() {
     if ((int)inputBuffer.length() < maxInputLength) {
       inputBuffer += activeCharSet[currentCharIndex];
 
-      int totalLength = inputBuffer.length();
+      int totalLength = inputBuffer.length() + 1;
       scrollOffset = max(0, totalLength - maxVisibleChars);
       cursorPos = min(totalLength - scrollOffset, maxVisibleChars - 1);
 
