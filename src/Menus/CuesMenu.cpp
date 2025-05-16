@@ -6,6 +6,7 @@
 #include "Menus/CuesMenu.h"
 #include "Menus/MainMenu.h" 
 #include "Menus/CuePathType.h"
+#include "Settings/WorkspaceManager.h"
 #include "Settings/AppState.h"
 #include "Settings/NetworkSettings.h"
 #include "Settings/LanguageManager.h"
@@ -146,14 +147,64 @@ void handleAddCueMenu() {
     delay(500);
 
     String prefix = "";
-    switch (selectedPathType) {
-      case 0: prefix = "/cue/"; break;
-      case 1: prefix = "/workspace/"; break;
-      case 2: prefix = "/overrides/"; break;
-      case 3: prefix = ""; break;
+    if (selectedPathType == 1) {
+      int wsCount = settings::getWorkspaceCount();
+      if (wsCount == 0) {
+        lcd.clear(); lcd.print(settings::t("no_workspaces"));
+        delay(1000);
+        prefix = "/workspace/";
+      } else {
+        const char* customOption = settings::t("custom_item");
+        long lastPos = -999;
+        int selected = 0;
+        bool done = false;
+
+        while (!done) {
+          encoder.tick();
+          long newPos = encoder.getPosition();
+          int totalItems = wsCount + 1;
+          selected = (newPos % totalItems + totalItems) % totalItems;
+
+          if (newPos != lastPos) {
+            lastPos = newPos;
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print(settings::t("select_workspace"));
+            lcd.setCursor(0, 1);
+            if (selected < wsCount) {
+              lcd.print(settings::getWorkspace(selected).name.substring(0, 16));
+            } else {
+              lcd.print(customOption);
+            }
+          }
+
+          if (digitalRead(settings::ENCODER_SW) == LOW && millis() - lastPressTime > debounceDelay) {
+            lastPressTime = millis();
+            if (selected < wsCount) {
+              prefix = "/workspace/" + settings::getWorkspace(selected).name + "/";
+            } else {
+              prefix = "/workspace/";
+            }
+            done = true;
+          }
+
+          if (digitalRead(settings::BACK_BUTTON) == LOW && millis() - lastPressTime > debounceDelay) {
+            lastPressTime = millis();
+            currentState = settings::CUES_MENU;
+            lcd.clear();
+            return;
+          }
+        }
+      }
+    } else {
+      switch (selectedPathType) {
+        case 0: prefix = "/cue/"; break;
+        case 2: prefix = "/overrides/"; break;
+        case 3: prefix = ""; break;
+      }
     }
 
-    utilities::initPrefilledInput(prefix, false, false, 64);
+  utilities::initPrefilledInput(prefix, false, false, 64);
 
     while (!utilities::updateTextInput()) {
       encoder.tick();
