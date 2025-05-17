@@ -1,6 +1,6 @@
 #include <Preferences.h>
 
-#include "Settings/WiFiConnector.h"
+#include "Settings/WifiConnector.h"
 #include "Settings/AppState.h"
 #include "Settings/NetworkSettings.h"
 #include "Settings/LanguageManager.h"

@@ -3,7 +3,7 @@
 #include <WiFiUdp.h>
 
 #include "Settings/NetworkSettings.h"
-#include "Settings/WiFiConnector.h"
+#include "Settings/WifiConnector.h"
 
 namespace osc_controller::settings {
 Preferences prefs;

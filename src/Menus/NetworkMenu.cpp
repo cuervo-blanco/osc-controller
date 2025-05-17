@@ -5,7 +5,7 @@
 #include "Globals.h"
 #include "Menus/MainMenu.h"
 #include "Menus/NetworkMenu.h"
-#include "Settings/WiFiConnector.h"
+#include "Settings/WifiConnector.h"
 #include "Settings/NetworkSettings.h"
 #include "Settings/AppState.h"
 #include "Settings/LanguageManager.h"
