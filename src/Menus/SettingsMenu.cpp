@@ -405,7 +405,7 @@ void handleDeviceInfo() {
   unsigned long lastChange = millis();
   int page = 0;
 
-  const char* version = "v1.0.0";
+  const char* version = "v1.0.04";
   String name = "Cuervo Blanco";
   String wsID = workspaceID.length() ? workspaceID : settings::t("none");
   String ip = settings::ipAddress.length() ? settings::ipAddress : settings::t("unset");
