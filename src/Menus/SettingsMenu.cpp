@@ -173,22 +173,22 @@ void performOTAUpdate() {
   WiFiClientSecure client;
   client.setInsecure(); 
 
-  HTTPClient http;
-  http.begin(client, firmwareURL);
-
-  int httpCode = http.GET();
-  Serial.printf("HTTP GET Code: %d\n", httpCode);
-
-  if (httpCode != 200) {
+  httpUpdate.onStart([]() {
     lcd.clear();
-    lcd.print("HTTP Error:");
-    lcd.setCursor(0, 1);
-    lcd.print(httpCode);
-    delay(3000);
-    return;
-  }
+    lcd.setCursor(0, 0);
+    lcd.print("Updating...");
+  });
 
-  t_httpUpdate_return ret = httpUpdate.update(http);
+  httpUpdate.onEnd([]() {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Update done!");
+    lcd.setCursor(0, 1);
+    lcd.print("Rebooting...");
+    delay(1500);
+  });
+
+  t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
@@ -412,7 +412,7 @@ void handleDeviceInfo() {
   unsigned long lastChange = millis();
   int page = 0;
 
-  const char* version = "v1.0.04";
+  const char* version = "vTEST";
   String name = "Cuervo Blanco";
   String wsID = workspaceID.length() ? workspaceID : settings::t("none");
   String ip = settings::ipAddress.length() ? settings::ipAddress : settings::t("unset");
