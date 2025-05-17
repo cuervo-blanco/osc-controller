@@ -1,0 +1,26 @@
+name: Build and Release Firmware
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup PlatformIO
+        uses: platformio/action-core@v2
+
+      - name: Build firmware
+        run: pio run -e esp32dev
+
+      - name: Upload firmware
+        uses: softprops/action-gh-release@v1
+        with:
+          files: .pio/build/esp32dev/firmware.bin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

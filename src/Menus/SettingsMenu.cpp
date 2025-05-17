@@ -172,6 +172,9 @@ void performOTAUpdate() {
   String firmwareURL = "https://github.com/cuervo-blanco/osc-controller/releases/latest/download/firmware.bin"; 
 
   WiFiClient client;
+  client.setInsecure();
+
+  httpUpdate.setAuthorization("token " + String(GITHUB_TOKEN));
   t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
 
   switch (ret) {
