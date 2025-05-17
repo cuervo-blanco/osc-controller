@@ -15,6 +15,10 @@
 #include "Utilities/RotaryTextInput.h"
 #include "CueStorage.h"
 
+#ifndef GITHUB_TOKEN
+#define GITHUB_TOKEN ""
+#endif
+
 namespace osc_controller::menus {
 
 using namespace osc_controller;
@@ -166,40 +170,38 @@ void performOTAUpdate() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(settings::t("checking_update"));
-
   delay(1000);
 
-  String firmwareURL = "https://github.com/cuervo-blanco/osc-controller/releases/latest/download/firmware.bin"; 
+  String firmwareURL = "https://github.com/YOUR_USER/YOUR_REPO/releases/latest/download/firmware.bin";
 
-  WiFiClient client;
+  WiFiClientSecure client;
   client.setInsecure();
 
-  httpUpdate.setAuthorization("token " + String(GITHUB_TOKEN));
+  HTTPClient http;
+  http.begin(client, firmwareURL);
+  http.addHeader("Authorization", "token " + String(GITHUB_TOKEN));
+
   t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
       lcd.clear();
-      lcd.setCursor(0, 0);
       lcd.print(settings::t("update_failed"));
       lcd.setCursor(0, 1);
       lcd.print(String(httpUpdate.getLastError()));
       break;
     case HTTP_UPDATE_NO_UPDATES:
       lcd.clear();
-      lcd.setCursor(0, 0);
       lcd.print(settings::t("no_updates"));
       break;
     case HTTP_UPDATE_OK:
       lcd.clear();
-      lcd.setCursor(0, 0);
       lcd.print(settings::t("update_done"));
       break;
   }
 
   delay(3000);
 }
-
 
 void handleSettingsMenu() {
   const char* items[] = {
