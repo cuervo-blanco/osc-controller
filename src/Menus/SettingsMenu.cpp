@@ -15,10 +15,6 @@
 #include "Utilities/RotaryTextInput.h"
 #include "CueStorage.h"
 
-#ifndef GITHUB_TOKEN
-#define GITHUB_TOKEN ""
-#endif
-
 namespace osc_controller::menus {
 
 using namespace osc_controller;
@@ -172,16 +168,27 @@ void performOTAUpdate() {
   lcd.print(settings::t("checking_update"));
   delay(1000);
 
-  String firmwareURL = "https://github.com/YOUR_USER/YOUR_REPO/releases/latest/download/firmware.bin";
+  String firmwareURL = "https://jaimeosvaldo.com/firmware/firmware.bin";
 
   WiFiClientSecure client;
-  client.setInsecure();
+  client.setInsecure(); 
 
   HTTPClient http;
   http.begin(client, firmwareURL);
-  http.addHeader("Authorization", "token " + String(GITHUB_TOKEN));
 
-  t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
+  int httpCode = http.GET();
+  Serial.printf("HTTP GET Code: %d\n", httpCode);
+
+  if (httpCode != 200) {
+    lcd.clear();
+    lcd.print("HTTP Error:");
+    lcd.setCursor(0, 1);
+    lcd.print(httpCode);
+    delay(3000);
+    return;
+  }
+
+  t_httpUpdate_return ret = httpUpdate.update(http);
 
   switch (ret) {
     case HTTP_UPDATE_FAILED:
