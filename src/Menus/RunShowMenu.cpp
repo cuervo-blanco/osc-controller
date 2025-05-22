@@ -19,6 +19,14 @@ static long lastEncoderPos = -999;
 static bool fireButtonPreviouslyDown = false;
 static bool showComplete = false;
 
+String safeTrim(const String& s, int len = 16) {
+  return s.length() > len ? s.substring(0, len) : s;
+}
+
+int safeIndex(long pos, int max) {
+  return (max == 0) ? 0 : ((pos % max + max) % max);
+}
+
 void handleRunShowMenu() {
   int count = getCueCount();
   if (count == 0) {
@@ -31,7 +39,8 @@ void handleRunShowMenu() {
 
   encoder.tick();
   long newPos = encoder.getPosition();
-  int scrollIndex = (newPos % count + count) % count;
+  int scrollIndex = safeIndex(newPos, count);
+
 
   if (showComplete && currentState != settings::RUN_SHOW_MENU) {
     currentCueIndex = 0;
@@ -104,7 +113,7 @@ void handleRunShowMenu() {
     lcd.print(":");
 
     lcd.setCursor(0, 1);
-    lcd.print(cue->oscCommand.substring(0, 16));
+    lcd.print(safeTrim(cue->oscCommand));
 
     lastDrawnIndex = currentCueIndex;
     forceRedraw = false;
@@ -114,14 +123,14 @@ void handleRunShowMenu() {
   if (!fireButtonPreviouslyDown && fireButtonDown && millis() - lastPressTime > debounceDelay) {
     lastPressTime = millis();
 
-    settings::sendCueOSC(*cue);
+    bool success = settings::sendCueOSC(*cue);
 
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(settings::t("fired_cue_label"));
+    lcd.print(success ? settings::t("fired_cue_label") : settings::t("send_failed"));
     lcd.print(currentCueIndex + 1);
     lcd.setCursor(0, 1);
-    lcd.print(cue->oscCommand.substring(0, 16));
+    lcd.print(safeTrim(cue->oscCommand));
     delay(800);
 
     currentCueIndex++;

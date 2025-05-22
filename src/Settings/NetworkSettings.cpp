@@ -104,27 +104,27 @@ bool hasSavedNetworkSettings() {
   return exists;
 }
 
-void sendCueOSC(const Cue& cue) {
+bool sendCueOSC(const Cue& cue) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Skipping OSC send: Not connected to Wi-Fi.");
-    return;
+    return false;
   }
 
   if (ipAddress.isEmpty()) {
     Serial.println("Empty IP address");
-    return;
+    return false;
   }
 
   IPAddress targetIP;
   if (!targetIP.fromString(ipAddress)) {
     Serial.println("Invalid IP address: " + ipAddress);
-    return;
+    return false;
   }
 
   int portNum = port.toInt();
   if (portNum <= 0 || portNum > 65535) {
     Serial.println("Skipping OSC send: Invalid port number: " + port);
-    return;
+    return false;
   }
 
   Serial.print("Sending OSC to ");
@@ -136,13 +136,14 @@ void sendCueOSC(const Cue& cue) {
 
   if (!udp.beginPacket(targetIP, portNum)) {
     Serial.println("Failed to begin UDP packet.");
-    return;
+    return false;
   }
 
   OSCMessage msg(cue.oscCommand.c_str());
   msg.send(udp);
   udp.endPacket();
   msg.empty();
+  return true;
 }
 
 } // namespace osc_controller::settings

@@ -13,7 +13,7 @@ void savePasscode(const String& passcode);
 
 void resetNetworkSettings();
 bool hasSavedNetworkSettings();
-void sendCueOSC(const Cue& cue);
+bool sendCueOSC(const Cue& cue);
 
 extern String connectedSSID;
 extern String password;
