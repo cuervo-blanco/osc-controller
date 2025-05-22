@@ -10,8 +10,17 @@ static Cue cueList[MAX_CUES];
 static int cueCount = 0;
 
 void loadCues() {
-  cuePrefs.begin(CUE_NAMESPACE, true);
+  if (!cuePrefs.begin(CUE_NAMESPACE, true)) {
+    Serial.println("Failed to begin Preferences in read mode for cues.");
+    cueCount = 0;
+    return;
+  }
+
   cueCount = cuePrefs.getUInt("count", 0);
+  if (cueCount > MAX_CUES) {
+    Serial.printf("Cue count (%d) exceeds MAX_CUES. Clamping to %d.\n", cueCount, MAX_CUES);
+    cueCount = MAX_CUES;
+  }
 
   for (int i = 0; i < cueCount && i < MAX_CUES; ++i) {
     Cue& c = cueList[i];
@@ -28,7 +37,10 @@ void loadCues() {
 }
 
 void saveCues() {
-  cuePrefs.begin(CUE_NAMESPACE, false);
+  if (!cuePrefs.begin(CUE_NAMESPACE, false)) {
+    Serial.println("Failed to begin Preferences in write mode for cues.");
+    return;
+  }
   cuePrefs.putUInt("count", cueCount);
 
   for (int i = 0; i < cueCount && i < MAX_CUES; ++i) {
@@ -45,7 +57,11 @@ void saveCues() {
 }
 
 bool addCue(const Cue& cue) {
-  if (cueCount >= MAX_CUES) return false;
+  if (cueCount >= MAX_CUES) {
+    Serial.println("Failed to add cue: MAX_CUES limit reached.");
+    return false;
+  }
+
   cueList[cueCount] = cue;
   cueList[cueCount].index = cueCount;
   cueCount++;
@@ -54,7 +70,11 @@ bool addCue(const Cue& cue) {
 }
 
 bool editCue(uint8_t index, const Cue& updated) {
-  if (index >= cueCount) return false;
+  if (index >= cueCount) {
+    Serial.printf("Failed to edit cue: index %d out of bounds.\n", index);
+    return false;
+  }
+  
   cueList[index] = updated;
   cueList[index].index = index;
   saveCues();
@@ -62,18 +82,27 @@ bool editCue(uint8_t index, const Cue& updated) {
 }
 
 bool deleteCue(uint8_t index) {
-  if (index >= cueCount) return false;
+  if (index >= cueCount) {
+    Serial.printf("Failed to delete cue: index %d out of bounds.\n", index);
+    return false;
+  }
+
   for (int i = index; i < cueCount - 1; ++i) {
     cueList[i] = cueList[i + 1];
     cueList[i].index = i;
   }
+  cueList[cueCount - 1] = {};
   cueCount--;
   saveCues();
   return true;
 }
 
 void reorderCues(uint8_t fromIndex, uint8_t toIndex) {
-  if (fromIndex >= cueCount || toIndex >= cueCount) return;
+  if (fromIndex >= cueCount || toIndex >= cueCount) {
+    Serial.printf("Failed to reorder cues: from %d or to %d out of bounds.\n", fromIndex, toIndex);
+    return;
+  }
+
   Cue moving = cueList[fromIndex];
 
   if (fromIndex < toIndex) {
@@ -94,7 +123,10 @@ void reorderCues(uint8_t fromIndex, uint8_t toIndex) {
 }
 
 Cue* getCue(uint8_t index) {
-  if (index >= cueCount) return nullptr;
+  if (index >= cueCount) {
+    Serial.printf("Attempted to access cue at invalid index: %d\n", index);
+    return nullptr;
+  }
   return &cueList[index];
 }
 
@@ -104,9 +136,13 @@ int getCueCount() {
 
 void resetCues() {
   cueCount = 0;
-  cuePrefs.begin(CUE_NAMESPACE, false);
+  if (!cuePrefs.begin(CUE_NAMESPACE, false)) {
+    Serial.println("Failed to begin Preferences to reset cues.");
+    return;
+  }
   cuePrefs.clear();
   cuePrefs.end();
+  Serial.println("All cues cleared.");
 }
 
 } // namespace osc_controller
