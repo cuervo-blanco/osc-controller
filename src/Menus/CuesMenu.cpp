@@ -294,6 +294,13 @@ void handleEditCueMenu() {
     if (newPos != lastPos) {
       lastPos = newPos;
       Cue* cue = getCue(selected);
+      if (!cue) {
+        lcd.clear();
+        lcd.print(settings::t("invalid_cue"));
+        delay(1000);
+        currentState = settings::CUES_MENU;
+        return;
+      }
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print(settings::t("edit_cue_label"));
@@ -306,6 +313,13 @@ void handleEditCueMenu() {
       lastPressTime = millis();
 
       Cue* cue = getCue(selected);
+      if (!cue) {
+        lcd.clear();
+        lcd.print(settings::t("invalid_cue"));
+        delay(1000);
+        currentState = settings::CUES_MENU;
+        return;
+      }
       utilities::initPrefilledInput(cue->oscCommand, false, false, 99);
       while (!utilities::updateTextInput()) {
         encoder.tick();
@@ -362,6 +376,13 @@ void handleDeleteCueMenu() {
       lcd.print(settings::t("press_confirm"));
     } else {
       Cue* cue = getCue(selected);
+      if (!cue) {
+        lcd.clear();
+        lcd.print(settings::t("invalid_cue"));
+        delay(1000);
+        currentState = settings::CUES_MENU;
+        return;
+      }
       lcd.setCursor(0, 0);
       lcd.print(settings::t("del_cue_label"));
       lcd.print(cue->index);
@@ -388,6 +409,13 @@ void handleDeleteCueMenu() {
       return;
     } else {
       Cue* cue = getCue(selected);
+      if (!cue) {
+        lcd.clear();
+        lcd.print(settings::t("invalid_cue"));
+        delay(1000);
+        currentState = settings::CUES_MENU;
+        return;
+      }
       if (deleteCue(cue->index)) {
         lcd.clear();
         lcd.print(settings::t("deleted_label"));
@@ -447,6 +475,13 @@ void handleCueControlMenu() {
   selected = (newPos % count + count) % count;
 
   Cue* cue = getCue(selected);
+  if (!cue) {
+    lcd.clear();
+    lcd.print(settings::t("invalid_cue"));
+    delay(1000);
+    currentState = settings::CUES_MENU;
+    return;
+  }
   
   if (selected != lastDrawn || forceRedraw) {
     lcd.clear();
@@ -509,6 +544,13 @@ void handleReorderCueMenu() {
     if (newPos != lastPos) {
       lastPos = newPos;
       Cue* cue = getCue(selected);
+      if (!cue) {
+        lcd.clear();
+        lcd.print(settings::t("invalid_cue"));
+        delay(1000);
+        currentState = settings::CUES_MENU;
+        return;
+      }
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print(settings::t("move_cue_label"));
