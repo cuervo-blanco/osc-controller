@@ -38,6 +38,11 @@ bool didUserCancel() {
 }
 
 void updateLCDLine() {
+  if (numChars <= 0 || currentCharIndex >= numChars) {
+    Serial.println("Invalid char index or character set.");
+    currentCharIndex = 0;
+  }
+
   lcd.setCursor(0, 0);
   lcd.print("                "); 
 
@@ -59,6 +64,11 @@ if (cursorInWindow < maxVisibleChars) {
 }
 
 void initTextInput() {
+  if (numChars <= 0) {
+    Serial.println("Character set initialization failed.");
+    return;
+  }
+
   userCanceled = false;
   isNumberInput = false;
   isIPInput = false;
@@ -179,9 +189,20 @@ bool updateTextInput() {
   encoder.tick();
   long newPos = encoder.getPosition();
 
+  if (numChars <= 0) {
+    Serial.println("Character set not initialized correctly.");
+    return false;
+  }
+
   if (newPos != lastPos) {
     lastPos = newPos;
-    currentCharIndex = (newPos % numChars + numChars) % numChars;
+    long safeMod = (newPos % numChars + numChars) % numChars;
+    if (safeMod < 0 || safeMod >= numChars) {
+      Serial.println("Encoder produced invalid char index.");
+      currentCharIndex = 0;
+    } else {
+      currentCharIndex = safeMod;
+    }
     updateLCDLine();
   }
 
@@ -189,6 +210,11 @@ bool updateTextInput() {
     delay(200);
 
     if ((int)inputBuffer.length() < maxInputLength) {
+      if (currentCharIndex >= numChars) {
+        Serial.println("Char index out of bounds on input.");
+        return false;
+      }
+
       inputBuffer += activeCharSet[currentCharIndex];
 
       int totalLength = inputBuffer.length() + 1;
@@ -230,6 +256,9 @@ bool updateTextInput() {
   if (digitalRead(settings::FIRE_BUTTON) == LOW) {
     delay(200);
     lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Confirmed");
+    delay(300);
     finished = true;
     return true;
   }
