@@ -21,6 +21,14 @@ void handleNetworkTest() {
   lcd.print(settings::t("pinging"));
   delay(500);
 
+  if (WiFi.status() != WL_CONNECTED) {
+    lcd.clear();
+    lcd.print(settings::t("wifi_not_connected"));
+    delay(1500);
+    currentState = settings::NETWORK_MENU;
+    return;
+  }
+
   IPAddress targetIP;
   if (!targetIP.fromString(settings::ipAddress)) {
     lcd.clear();
@@ -76,8 +84,14 @@ void handleNetworkMenu() {
     switch (selectedIndex) {
       case 0:
         settings::connectToWiFi(lcd, encoder, settings::ENCODER_SW);
-        settings::connectedSSID = WiFi.SSID();
-        settings::ipAddress = WiFi.localIP().toString();
+        if (WiFi.status() == WL_CONNECTED) {
+          settings::connectedSSID = WiFi.SSID();
+          settings::ipAddress = WiFi.localIP().toString();
+        } else {
+          lcd.clear();
+          lcd.print(settings::t("wifi_failed"));
+          delay(1000);
+        }
         currentState = settings::NETWORK_MENU;
         break;
       case 1:
@@ -136,18 +150,29 @@ void handleShowInfo() {
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("SSID: ");
-  lcd.print(settings::connectedSSID.substring(0, 9));
+  String ssid = settings::connectedSSID;
+  if (ssid.isEmpty()) ssid = "[none]";
+  lcd.print(ssid.substring(0, 9));
+
   lcd.setCursor(0, 1);
   lcd.print("IP:");
-  lcd.print(settings::ipAddress);
+  if (settings::ipAddress.isEmpty()) {
+    lcd.print("[none]");
+  } else {
+    lcd.print(settings::ipAddress);
+  }
+
   delay(2000);
+
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(String(settings::t("port_item")) + ": ");
-  lcd.print(settings::port);
+  lcd.print(settings::port.isEmpty() ? "[unset]" : settings::port);
+
   lcd.setCursor(0, 1);
   lcd.print(String(settings::t("passcode_item")) + ":");
-  lcd.print(settings::passcode);
+  lcd.print(settings::passcode.isEmpty() ? "[unset]" : settings::passcode);
+
   delay(2000);
   currentState = settings::NETWORK_MENU;
 }
