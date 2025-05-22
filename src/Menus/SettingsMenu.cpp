@@ -40,7 +40,10 @@ Preferences settingsPrefs;
 bool scrollLockEnabled = false;
 
 void loadSettings() {
-  settingsPrefs.begin("settings", true);
+  if (!settingsPrefs.begin("settings", true)) {
+    Serial.println("Failed to open preferences for reading.");
+    return;
+  }
   thirdButtonAction = (ThirdButtonAction)settingsPrefs.getUChar("thirdAction", ACTION_NONE);
   customOscPath = settingsPrefs.getString("customPath", "");
   gotoCueID = settingsPrefs.getString("gotoCue", "");
@@ -53,7 +56,10 @@ void loadSettings() {
 }
 
 void saveSettings() {
-  settingsPrefs.begin("settings", false);
+  if (!settingsPrefs.begin("settings", false)) {
+    Serial.println("Failed to open preferences for writing.");
+    return;
+  }
   settingsPrefs.putUChar("thirdAction", thirdButtonAction);
   settingsPrefs.putString("customPath", customOscPath);
   settingsPrefs.putString("gotoCue", gotoCueID);
@@ -62,7 +68,10 @@ void saveSettings() {
 }
 
 bool isScrollLockEnabled() {
-  settingsPrefs.begin("settings", true);
+  if (!settingsPrefs.begin("settings", true)) {
+    Serial.println("Failed to open preferences for reading.");
+    return;
+  }
   bool value = settingsPrefs.getBool("scrollLock", false);
   settingsPrefs.end();
   return value;
@@ -75,11 +84,17 @@ void performFactoryReset() {
 
   resetCues();
   settings::resetNetworkSettings(); 
-  settingsPrefs.begin("settings", false);
+  if (!settingsPrefs.begin("settings", false)) {
+    Serial.println("Failed to open preferences for writing.");
+    return;
+  }
   settingsPrefs.clear();
   settingsPrefs.end();
 
-  settingsPrefs.begin("workspaces", false);
+  if (!settingsPrefs.begin("workspaces", false)) {
+    Serial.println("Failed to open workspaces preferences for writing.");
+    return;
+  }
   settingsPrefs.clear();
   settingsPrefs.end();
 
@@ -186,6 +201,10 @@ void performOTAUpdate() {
     lcd.setCursor(0, 1);
     lcd.print("Rebooting...");
     delay(1500);
+  });
+
+  httpUpdate.onError([](int err) {
+    Serial.printf("OTA Error [%d]: %s\n", err, httpUpdate.getLastErrorString().c_str());
   });
 
   t_httpUpdate_return ret = httpUpdate.update(client, firmwareURL);
