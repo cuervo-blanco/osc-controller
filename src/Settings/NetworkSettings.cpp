@@ -7,7 +7,6 @@
 
 namespace osc_controller::settings {
 Preferences prefs;
-
 WiFiUDP udp;
 
 String connectedSSID = "";
@@ -17,7 +16,10 @@ String ipAddress = "";
 String port = "53000";
 
 void loadNetworkSettings() {
-  prefs.begin("net", false);
+   if (!prefs.begin("net", false)) {
+    Serial.println("Failed to open preferences in read/write mode.");
+    return;
+  }
   connectedSSID = prefs.getString("ssid", "");
   password = prefs.getString("password", "");
   passcode = prefs.getString("passcode", "");
@@ -33,7 +35,10 @@ void loadNetworkSettings() {
 }
 
 void saveNetworkCredentials(const String& ssid, const String& password) {
-  prefs.begin("net", false);
+  if (!prefs.begin("net", false)) {
+    Serial.println("Failed to open preferences for writing.");
+    return;
+  }
   if (ssid != "") prefs.putString("ssid", ssid);
   if (password != "") prefs.putString("password", password);
   prefs.end();
@@ -44,7 +49,10 @@ void saveNetworkCredentials(const String& ssid, const String& password) {
 }
 
 void saveQLABIP(const String& ip) {
-  prefs.begin("net", false);
+  if (!prefs.begin("net", false)) {
+    Serial.println("Failed to open preferences for saving IP.");
+    return;
+  }
   prefs.putString("ip", ip);
   prefs.end();
 
@@ -53,21 +61,32 @@ void saveQLABIP(const String& ip) {
 }
 
 void savePort(uint16_t portNum) {
-  prefs.begin("net", false);
+  if (!prefs.begin("net", false)) {
+    Serial.println("Failed to open preferences for saving port.");
+    return;
+  }
   prefs.putUInt("port", portNum);
   prefs.end();
 }
 
 void savePasscode(const String& passcode) {
-  prefs.begin("net", false);
+  if (!prefs.begin("net", false)) {
+    Serial.println("Failed to open preferences for saving passcode.");
+    return;
+  }
+
   prefs.putString("passcode", passcode);
   prefs.end();
 }
 
 void resetNetworkSettings() {
-  prefs.begin("net", false);
+  if (!prefs.begin("net", false)) {
+    Serial.println("Failed to open preferences for reset.");
+    return;
+  }
   prefs.clear();
   prefs.end();
+
   connectedSSID = "";
   password = "";
   ipAddress = "";
@@ -76,20 +95,22 @@ void resetNetworkSettings() {
 }
 
 bool hasSavedNetworkSettings() {
-  prefs.begin("net", false);
+  if (!prefs.begin("net", false)) {
+    Serial.println("Failed to check for saved network settings.");
+    return false;
+  }
   bool exists = prefs.isKey("ssid");
   prefs.end();
   return exists;
 }
 
 void sendCueOSC(const Cue& cue) {
-
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("Skipping OSC send: Not connected to Wi-Fi.");
     return;
   }
 
-  if (ipAddress == "") {
+  if (ipAddress.isEmpty()) {
     Serial.println("Empty IP address");
     return;
   }
@@ -100,15 +121,25 @@ void sendCueOSC(const Cue& cue) {
     return;
   }
 
+  int portNum = port.toInt();
+  if (portNum <= 0 || portNum > 65535) {
+    Serial.println("Skipping OSC send: Invalid port number: " + port);
+    return;
+  }
+
   Serial.print("Sending OSC to ");
   Serial.print(targetIP);
   Serial.print(":");
-  Serial.print(port);
+  Serial.print(portNum);
   Serial.print(" -> ");
   Serial.println(cue.oscCommand);
 
+  if (!udp.beginPacket(targetIP, portNum)) {
+    Serial.println("Failed to begin UDP packet.");
+    return;
+  }
+
   OSCMessage msg(cue.oscCommand.c_str());
-  udp.beginPacket(targetIP, port.toInt());
   msg.send(udp);
   udp.endPacket();
   msg.empty();
