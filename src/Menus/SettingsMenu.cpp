@@ -70,7 +70,7 @@ void saveSettings() {
 bool isScrollLockEnabled() {
   if (!settingsPrefs.begin("settings", true)) {
     Serial.println("Failed to open preferences for reading.");
-    return;
+    return false;
   }
   bool value = settingsPrefs.getBool("scrollLock", false);
   settingsPrefs.end();
