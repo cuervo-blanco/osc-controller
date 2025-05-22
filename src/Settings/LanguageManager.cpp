@@ -134,6 +134,8 @@ const char* t(const char* key) {
     if (strcmp(key, "ON") == 0) return "ON";
     if (strcmp(key, "scanning_wifi") == 0) return "Scanning WiFi...";
     if (strcmp(key, "no_networks") == 0) return "No networks!";
+    if (strcmp(key, "scan_failed") == 0) return "Scan Failed";
+    if (strcmp(key, "ssid_error") == 0) return "SSID Error.";
     if (strcmp(key, "enter_password") == 0) return "Enter password:";
     if (strcmp(key, "select_network") == 0) return "Select Network:";
     if (strcmp(key, "custom_item") == 0) return "Custom";
@@ -255,6 +257,8 @@ const char* t(const char* key) {
     if (strcmp(key, "ON") == 0) return "ENCENDIDO";
     if (strcmp(key, "scanning_wifi") == 0) return "Escaneando Wifi...";
     if (strcmp(key, "no_networks") == 0) return "No hay redes!";
+    if (strcmp(key, "scan_failed") == 0) return "Escaneo fallido";
+    if (strcmp(key, "ssid_error") == 0) return "SSID Error.";
     if (strcmp(key, "enter_password") == 0) return "Ingresar contrasena";
     if (strcmp(key, "select_network") == 0) return "Escoger Red:";
     if (strcmp(key, "custom_item") == 0) return "Personalizado";

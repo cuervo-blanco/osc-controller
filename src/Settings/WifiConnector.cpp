@@ -42,13 +42,12 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
   if (n == 0) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(t("no_networks"));
-    delay(500);
+    lcd.print(n == 0 ? t("no_networks") : t("scan_failed"));
+    delay(2000);
     return;
   }
 
   showNetworkList(lcd, 0, n);
-
   static long lastPos = -999;
 
   while (selecting) {
@@ -69,14 +68,21 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
     if (digitalRead(BACK_BUTTON) == LOW) {
       delay(300);
       lcd.clear();
-      delay(500);
+      lcd.print(t("cancelled"));
+      delay(1000);
       return; 
     }
   }
 
   String ssid = WiFi.SSID(selectedNetwork);
-  String password = "";
+  if (ssid.isEmpty()) {
+    lcd.clear();
+    lcd.print(t("ssid_error"));
+    delay(2000);
+    return;
+  }
 
+  String password = "";
   if (WiFi.encryptionType(selectedNetwork) == WIFI_AUTH_OPEN) {
     WiFi.begin(ssid.c_str());
   } else {
@@ -97,7 +103,14 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
         delay(500);
         return;
       }
+
       password = utilities::getFinalInput();
+      if (password.isEmpty()) {
+        lcd.clear();
+        lcd.print(t("empty_password"));
+        delay(1500);
+        return;
+      }
 
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -112,12 +125,10 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
       lcd.clear();
       if (WiFi.status() == WL_CONNECTED) {
         saveNetworkCredentials(ssid, password);
-
         lcd.setCursor(0, 0);
         lcd.print(t("connected"));
         lcd.setCursor(0, 1);
         lcd.print(WiFi.localIP());
-
       } else {
         lcd.setCursor(0, 0);
         lcd.print(t("connection_failed."));
@@ -125,7 +136,7 @@ void connectToWiFi(LiquidCrystal_I2C& lcd, RotaryEncoder& encoder, int encoderBu
         lcd.print(t("try_again"));
       }
 
-      delay(500);
+      delay(1000);
     }
   }
 }
